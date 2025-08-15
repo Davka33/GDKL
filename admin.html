@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GDKL — Admin Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080808;
+      --panel: #0f2525;
+      --neon: #00f0d6;
+      --neon-strong: #00e7d0;
+      --muted: #9fbfb9;
+      --error: #ff7b7b;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Orbitron', sans-serif;
+      background: var(--bg);
+      color: #e7f7f6;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(0,0,0,0.7);
+      padding: 10px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo .mark {
+      width: 44px;
+      height: 30px;
+      border-radius: 6px;
+      display: inline-grid;
+      place-items: center;
+      background: linear-gradient(135deg, #ffc84a, #ff6a00);
+      font-weight: 700;
+      color: #071018;
+    }
+    .logo .title {
+      color: var(--neon);
+      font-size: 24px;
+      letter-spacing: 1px;
+      text-shadow: 0 0 18px rgba(0,240,214,0.25);
+    }
+    .admin-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: calc(100vh - 80px);
+      padding: 20px;
+    }
+    .admin-panel {
+      background: rgba(5,20,20,0.85);
+      border-radius: 12px;
+      padding: 28px;
+      width: 100%;
+      max-width: 500px;
+      border: 2px solid rgba(0,230,210,0.08);
+      box-shadow: 0 0 24px rgba(0,230,210,0.12) inset, 0 12px 40px rgba(0,240,214,0.06);
+    }
+    .section-title {
+      color: var(--neon);
+      font-size: 22px;
+      margin: 0 0 20px;
+      text-shadow: 0 0 18px rgba(0,240,214,0.18);
+    }
+    .admin-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .admin-form input {
+      background: rgba(0,0,0,0.15);
+      border: 1px solid rgba(255,255,255,0.03);
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: #dff7f0;
+      outline: none;
+      font-family: inherit;
+      font-size: 16px;
+      width: 100%;
+    }
+    .admin-form input:focus {
+      border-color: var(--neon);
+      box-shadow: 0 0 10px rgba(0,240,214,0.3);
+    }
+    .admin-form button {
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      background: var(--neon);
+      color: #031818;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    .admin-form button:hover {
+      background: var(--neon-strong);
+      box-shadow: 0 0 15px rgba(0,240,214,0.4);
+    }
+    .error-message {
+      color: var(--error);
+      margin-top: 10px;
+      text-align: center;
+      min-height: 20px;
+    }
+    footer {
+      padding: 22px 0;
+      text-align: center;
+      color: #7b7b7b;
+      background: rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="mark">GD</div>
+      <div class="title">GDKL</div>
+    </div>
+  </header>
+  
+  <div class="admin-container">
+    <div class="admin-panel">
+      <h1 class="section-title">Admin Verification</h1>
+      <div class="admin-form">
+        <input id="adminCode" type="password" placeholder="Enter Admin Code" />
+        <button onclick="checkAdminCode()">Verify Code</button>
+        <div id="adminError" class="error-message"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 GDKL. All rights reserved.
+  </footer>
+
+  <script>
+    function checkAdminCode() {
+      const code = document.getElementById('adminCode').value;
+      const errorElement = document.getElementById('adminError');
+      
+      if (!code) {
+        errorElement.textContent = 'Please enter admin code!';
+        return;
+      }
+      
+      if (code === '331441551') {
+        // Проверяем регистрацию
+        if(localStorage.getItem('gdklRegistered') === 'true') {
+          window.location.href = 'admin-panel.html';
+        } else {
+          errorElement.textContent = 'Please register first! Redirecting...';
+          setTimeout(() => {
+            window.location.href = 'register.html';
+          }, 1500);
+        }
+      } else {
+        errorElement.textContent = 'Incorrect admin code! Try again.';
+      }
+    }
+    
+    // Добавляем обработчик нажатия Enter
+    document.getElementById('adminCode').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        checkAdminCode();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GDKL — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080808;
+  --panel: #0f2525;
+  --neon: #00f0d6;
+  --neon-strong: #00e7d0;
+  --muted: #9fbfb9;
+  --error: #ff7b7b;
+  --success: #6fbf7b;
+  --easy: #4CAF50;
+  --normal: #2196F3;
+  --hard: #9C27B0;
+  --insane: #FF9800;
+  --extreme: #F44336;
+}
+* { box-sizing: border-box; margin:0; padding:0; }
+html, body { height:100%; font-family: 'Orbitron', sans-serif; background:var(--bg); color:#e7f7f6; }
+header { position: sticky; top:0; z-index:40; background: rgba(0,0,0,0.7); padding:10px 40px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 6px 30px rgba(0,0,0,0.6);}
+.logo { display:flex; align-items:center; gap:12px;}
+.logo .mark { width:44px; height:30px; border-radius:6px; display:inline-grid; place-items:center; background:linear-gradient(135deg, #ffc84a, #ff6a00); font-weight:700; color:#071018;}
+.logo .title { color:var(--neon); font-size:24px; letter-spacing:1px; text-shadow:0 0 18px rgba(0,240,214,0.25);}
+nav a { color:white; text-decoration:none;}
+main { max-width:1100px; margin:38px auto; padding:0 20px 120px;}
+.panel { background: rgba(5,20,20,0.85); border-radius:12px; padding:28px; margin-bottom:36px; border:2px solid rgba(0,230,210,0.08); box-shadow:0 0 24px rgba(0,230,210,0.12) inset,0 12px 40px rgba(0,240,214,0.06);}
+.section-title { color: var(--neon); font-size:22px; margin:0 0 14px; text-shadow:0 0 18px rgba(0,240,214,0.18);}
+.admin { display:flex; flex-direction:column; gap:12px; max-width:520px;}
+.admin input, .admin select { background: rgba(0,0,0,0.15); border:1px solid rgba(255,255,255,0.03); padding:12px; border-radius:8px; color:#dff7f0; outline:none; font-family:inherit;}
+.admin input::placeholder { color:#7a7a7a;}
+.admin button { padding:12px; border-radius:8px; border:none; background: var(--neon); color:#031818; font-weight:700; cursor:pointer; transition: all 0.2s;}
+.admin button:hover { background: var(--neon-strong); transform: translateY(-1px);}
+.list-container { margin-top:20px; max-height:400px; overflow-y:auto; }
+.list-item { padding:8px 12px; margin-bottom:8px; border-left:4px solid var(--neon); display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.2); border-radius:6px;}
+.delete-btn { background:#ff4d4d; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; transition:0.2s;}
+.delete-btn:hover { background:#ff1a1a;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="mark">GD</div><div class="title">GDKL</div></div>
+  <nav><a href="index.html">&lt; Back to Main</a></nav>
+</header>
+<main>
+
+<!-- LEVELS PANEL -->
+<section class="panel">
+  <h1 class="section-title">Admin Panel — Levels</h1>
+  <form class="admin" onsubmit="event.preventDefault();addLevel()">
+    <input id="levelName" placeholder="Level Name" required/>
+    <div style="display:flex;gap:10px;">
+      <input id="levelRank" placeholder="Rank" type="number" required/>
+      <select id="levelDifficulty" required>
+        <option value="" disabled selected>Select Difficulty</option>
+        <option value="easy">Easy Demon</option>
+        <option value="normal">Medium Demon</option>
+        <option value="hard">Hard Demon</option>
+        <option value="insane">Insane Demon</option>
+        <option value="extreme">Extreme Demon</option>
+      </select>
+    </div>
+    <input id="levelCreator" placeholder="Creator (optional)"/>
+    <select id="levelType" required>
+      <option value="" disabled selected>Select Type</option>
+      <option value="demon">Demon</option>
+      <option value="challenge">Challenge</option>
+      <option value="soon">Soon</option>
+    </select>
+    <button type="submit">Add Level</button>
+  </form>
+  <div id="levelsList" class="list-container"></div>
+</section>
+
+<!-- PLAYERS PANEL -->
+<section class="panel">
+  <h1 class="section-title">Admin Panel — Players</h1>
+  <form class="admin" onsubmit="event.preventDefault();addPlayer()">
+    <input id="playerName" placeholder="Player Name" required/>
+    <input id="playerCountry" placeholder="Country" required/>
+    <input id="playerDemons" type="number" placeholder="Demons Completed" required/>
+    <button type="submit">Add Player</button>
+  </form>
+  <div id="playersList" class="list-container"></div>
+</section>
+
+</main>
+<footer>© 2025 GDKL. All rights reserved.</footer>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+// Your Firebase config
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_DOMAIN",
+  databaseURL: "YOUR_DB_URL",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// LEVELS
+function addLevel() {
+  const name = document.getElementById('levelName').value.trim();
+  const rank = parseInt(document.getElementById('levelRank').value);
+  const difficulty = document.getElementById('levelDifficulty').value;
+  const creator = document.getElementById('levelCreator').value.trim() || 'Unknown';
+  const type = document.getElementById('levelType').value;
+  if(!name || isNaN(rank) || !difficulty || !type) return alert('Fill all fields!');
+  const newRef = db.ref('levels').push();
+  newRef.set({name, rank, difficulty, creator, type});
+  document.getElementById('levelName').value='';
+  document.getElementById('levelRank').value='';
+  document.getElementById('levelCreator').value='';
+  document.getElementById('levelType').selectedIndex = 0;
+}
+
+db.ref('levels').on('value', snapshot => {
+  const list = document.getElementById('levelsList');
+  list.innerHTML = '';
+  snapshot.forEach(child => {
+    const data = child.val();
+    const div = document.createElement('div');
+    div.className='list-item';
+    div.innerHTML = `#${data.rank} ${data.name} [${data.difficulty}] (${data.type}) by ${data.creator} 
+      <button class="delete-btn" onclick="db.ref('levels/${child.key}').remove()">Delete</button>`;
+    list.appendChild(div);
+  });
+});
+
+// PLAYERS
+function addPlayer() {
+  const name = document.getElementById('playerName').value.trim();
+  const country = document.getElementById('playerCountry').value.trim();
+  const demons = parseInt(document.getElementById('playerDemons').value);
+  if(!name || !country || isNaN(demons)) return alert('Fill all fields!');
+  const newRef = db.ref('players').push();
+  newRef.set({name, country, demons});
+  document.getElementById('playerName').value='';
+  document.getElementById('playerCountry').value='';
+  document.getElementById('playerDemons').value='';
+}
+
+db.ref('players').on('value', snapshot => {
+  const list = document.getElementById('playersList');
+  list.innerHTML = '';
+  snapshot.forEach(child => {
+    const data = child.val();
+    const div = document.createElement('div');
+    div.className='list-item';
+    div.innerHTML = `${data.name} (${data.country}) — Demons: ${data.demons} 
+      <button class="delete-btn" onclick="db.ref('players/${child.key}').remove()">Delete</button>`;
+    list.appendChild(div);
+  });
+});
+</script>
+</body>
+</html>

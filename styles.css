@@ -1,0 +1,54 @@
+/* Demon List Styles */
+.demon-list-header {
+  display: flex;
+  padding: 10px 15px;
+  background: rgba(0,240,214,0.1);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.demon-list-header span {
+  flex: 1;
+}
+
+.demon-list-header span:first-child {
+  flex: 0.5;
+}
+
+.demon-item {
+  display: flex;
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  background: rgba(5,20,20,0.6);
+  border-radius: 6px;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.demon-item:hover {
+  background: rgba(0,240,214,0.05);
+}
+
+.demon-rank {
+  flex: 0.5;
+  color: var(--neon);
+  font-weight: bold;
+}
+
+.demon-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.demon-creator {
+  flex: 1;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.no-levels {
+  text-align: center;
+  color: var(--muted);
+  padding: 20px;
+}
